@@ -3,7 +3,7 @@
         <!-- 展开时：Logo + 搜索/折叠按钮同行 -->
         <div class="logo_row" v-if="!uiStore.sidebarCollapsed">
             <div class="logo_box" @click="router.push('/platform/knowledge-bases')" style="cursor: pointer;">
-                <img class="logo" src="@/assets/img/weknora.png" alt="">
+                <img class="logo" :src="sidebarLogo" :alt="sidebarLogoAlt">
                 <sup v-if="isLiteEdition" class="lite-badge">Lite</sup>
             </div>
             <div class="logo_actions">
@@ -319,7 +319,13 @@ const PLATFORM_LOGO: Record<string, string> = {
 
 const platformLogo = (p: string): string => (p ? PLATFORM_LOGO[p] || '' : '');
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+
+// Branding overrides from runtime branding.js (empty = built-in default logo)
+import defaultLogo from '@/assets/img/weknora.png';
+import { brandDisplayName, getBrandingLinks } from '@/utils/branding';
+const sidebarLogo = getBrandingLinks().sidebarLogo || defaultLogo;
+const sidebarLogoAlt = computed(() => brandDisplayName(locale.value));
 const usemenuStore = useMenuStore();
 const sessionActivity = useSessionActivityStore();
 const { entries: sessionActivityEntries, unread: sessionUnread } = storeToRefs(sessionActivity);

@@ -25,6 +25,11 @@ services:
       # For remote deployment, set this to the remote App's service port.
       - APP_PORT=${APP_BACKEND_PORT:-8080}
       - APP_SCHEME=${APP_SCHEME:-http}
+    volumes:
+      # 品牌运行时配置：宿主机编辑 deploy/branding.js 保存后，用户刷新页面即生效，
+      # 无需重启容器或重建镜像（nginx 对 /branding.js 返回 no-cache）。
+      # 不需要自定义品牌时可删除本挂载，使用镜像内置的默认配置（全空）。
+      - ./deploy/branding.js:/usr/share/nginx/html/branding.js:ro
     # NOTE: If using a remote App backend, comment out or remove the depends_on
     # block below and set APP_HOST/APP_BACKEND_PORT/APP_SCHEME in your .env file.
     depends_on:

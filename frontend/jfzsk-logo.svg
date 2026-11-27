@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="126" viewBox="0 0 400 126">
+  <!-- text: 5 CJK chars, navy, wide tracking -->
+  <text x="200" y="60" text-anchor="middle" textLength="300" lengthAdjust="spacing"
+        font-family="'PingFang SC','Hiragino Sans GB','Heiti SC',sans-serif"
+        font-weight="600" font-size="52" fill="#182A3C">纪法知识库</text>
+
+  <!-- fin / sail: slender, base merging into the top strand -->
+  <path d="M 226,88 C 230,81 233,76 237,72 C 239,78 243,84 247,87 C 240,89.5 232,89.5 226,88 Z" fill="#0E2130"/>
+
+  <!-- top thin strand -->
+  <path d="M 84,90.5 C 130,87.5 170,91.5 210,89.5 C 226,88.5 242,84.5 258,79.5 L 259.5,83 C 248,87.5 232,91.5 212,92.5 C 172,94.5 128,92.5 84,90.5 Z" fill="#0E2130"/>
+
+  <!-- gold accent strand -->
+  <path d="M 150,96 C 182,98.5 214,98.5 242,92.5 C 250,90.5 258,87.5 264,84.5 L 265.5,87.5 C 259,91.5 251,94.5 242,95.5 C 214,100.5 182,101 150,98.5 Z" fill="#EEC14F"/>
+
+  <!-- bottom bundle sweeping up to a point -->
+  <path d="M 194,104 C 216,102.5 236,98.5 248,92.5 C 255,89 261,84.5 265,79.5 L 266.5,83 C 260,91.5 252,98 242,102 C 228,106.5 210,106.5 194,104.5 Z" fill="#0E2130"/>
+</svg>

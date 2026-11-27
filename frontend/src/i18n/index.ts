@@ -1,6 +1,7 @@
 import { watch } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { isEmbedPage } from '../utils/authRefresh.ts'
+import { applyBrandingToMessages, applyDocumentTitle } from '../utils/branding.ts'
 import { pluralRules } from './pluralizationRules.ts'
 import { BUILT_IN_DEFAULT, resolveDefaultLocale } from './resolveDefaultLocale.ts'
 
@@ -104,6 +105,9 @@ const i18n = createI18n({
 const loadedLocales = new Set<SupportedMainLocale>()
 const inflightLoads = new Map<SupportedMainLocale, Promise<SupportedMainLocale>>()
 const embedSeedMessages = new Map<SupportedMainLocale, Record<string, unknown>>()
+// Pristine (pre-branding) bundles kept so `reapplyBranding()` can re-transform
+// after the runtime branding config changes without re-importing modules.
+const rawBundles = new Map<SupportedMainLocale, Record<string, unknown>>()
 
 function mergePlainRecords(
   base: Record<string, unknown>,
@@ -147,8 +151,9 @@ export async function loadLocaleMessages(rawLocale: string): Promise<SupportedMa
   const task = LOCALE_LOADERS[target]()
     .then((mod) => {
       const embedSeed = embedSeedMessages.get(target)
-      const bundle = embedSeed ? mergePlainRecords(embedSeed, mod.default) : mod.default
-      i18n.global.setLocaleMessage(target, bundle as never)
+      const raw = embedSeed ? mergePlainRecords(embedSeed, mod.default) : mod.default
+      rawBundles.set(target, raw)
+      i18n.global.setLocaleMessage(target, applyBrandingToMessages(raw, target) as never)
       loadedLocales.add(target)
       return target
     })
@@ -178,9 +183,10 @@ export function seedEmbedLocaleMessages(
     embedSeedMessages.set(locale, seed)
     if (loadedLocales.has(locale)) {
       const current = i18n.global.getLocaleMessage(locale) as unknown as Record<string, unknown>
-      i18n.global.setLocaleMessage(locale, mergePlainRecords(seed, current) as never)
+      const merged = mergePlainRecords(seed, current)
+      i18n.global.setLocaleMessage(locale, applyBrandingToMessages(merged, locale) as never)
     } else {
-      i18n.global.setLocaleMessage(locale, seed as never)
+      i18n.global.setLocaleMessage(locale, applyBrandingToMessages(seed, locale) as never)
     }
   }
   return syncEmbedSharedLocale(activeLocale)
@@ -207,6 +213,7 @@ export function initI18n(): Promise<SupportedMainLocale> {
     const task = loadLocaleMessages(active)
       .then((loaded) => {
         i18n.global.locale.value = loaded
+        applyDocumentTitle()
         return loaded
       })
       .catch((err) => {
@@ -216,6 +223,22 @@ export function initI18n(): Promise<SupportedMainLocale> {
     bootstrapPromise = task
   }
   return bootstrapPromise
+}
+
+/**
+ * Re-apply runtime branding from the pristine (pre-transform) bundles.
+ * Call after mutating `window.__BRANDING__` (e.g. after editing branding.js
+ * and re-fetching it) to update every loaded locale and the document title
+ * without a page reload.
+ */
+export function reapplyBranding(): void {
+  for (const locale of SUPPORTED_MAIN_LOCALES) {
+    if (!loadedLocales.has(locale)) continue
+    const raw = rawBundles.get(locale) ?? embedSeedMessages.get(locale)
+    if (!raw) continue
+    i18n.global.setLocaleMessage(locale, applyBrandingToMessages(raw, locale) as never)
+  }
+  applyDocumentTitle()
 }
 
 watch(
